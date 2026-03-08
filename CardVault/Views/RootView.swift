@@ -37,7 +37,7 @@ struct RootView: View {
         .task {
             await lockViewModel.unlockIfNeeded()
         }
-        .onChange(of: scenePhase) { _, newPhase in
+        .onChange(of: scenePhase, initial: false) { _, newPhase in
             switch newPhase {
             case .active:
                 Task {

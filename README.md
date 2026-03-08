@@ -11,7 +11,7 @@ CardVault is a clean, secure iOS card wallet built for local-first privacy. Your
   &nbsp;
   <img src="https://github.com/user-attachments/assets/61f0dcc4-68e3-4b94-a93b-f23d9846ad49" alt="screenshot-2" width="170" />
   &nbsp;
-  <img src="https://github.com/user-attachments/assets/c6d30b03-7c7c-4854-a778-ed5c4c7215c7" alt="screenshot-3" width="170" />
+  <img src="https://github.com/user-attachments/assets/dd30a5f2-79b8-46da-b9df-637a96015115" alt="screenshot-3" width="170" />
   &nbsp;
   <img src="https://github.com/user-attachments/assets/c82b696a-dc67-485a-95c1-494c55784e00" alt="screenshot-4" width="170" />
 </p>
