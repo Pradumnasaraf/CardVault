@@ -1,60 +1,39 @@
+<p align="center">
+  <img src="docs/images/logo.png" alt="CardVault Logo" width="120" />
+</p>
+
 # CardVault
 
-CardVault is a SwiftUI iOS app for local-only secure card storage.
+CardVault is a clean, secure iOS card wallet built for local-first privacy. Your card data stays on your iPhone and is never uploaded to a backend or cloud service.
 
-## Features
-- Face ID / biometrics gate when app opens and when app returns from background.
-- Sensitive data (`cardNumber`, `cvv`) stored in Keychain.
-- Non-sensitive metadata encrypted at rest using `CryptoKit` (`AES.GCM`).
-- No backend and no cloud sync.
+## Screenshots
 
-## Requirements
-- macOS with Xcode 26+.
-- iPhone for on-device testing.
-- Apple ID signed into Xcode.
+<p align="center">
+  <img src="docs/images/lock-screen.png" alt="CardVault lock screen" width="260" />
+</p>
 
-## Project Structure
-- `CardVault/Models`: domain models and DTOs.
-- `CardVault/Services`: Keychain, biometric auth, encrypted storage, repository.
-- `CardVault/ViewModels`: state + business logic for screens.
-- `CardVault/Views`: SwiftUI screens.
-- `CardVault/Components`: reusable UI pieces.
-- `CardVault/Utilities`: formatting, validation, dependency wiring.
-- `CardVault/Assets.xcassets`: app icons and colors.
-- `CardVault.xcodeproj`: Xcode project file.
+## Why CardVault
 
-## Run In Xcode
-1. Open `CardVault.xcodeproj`.
-2. Select target `CardVault` -> `Signing & Capabilities`.
-3. Enable `Automatically manage signing`.
-4. Select your Apple team.
-5. Connect iPhone and trust the Mac if prompted.
-6. Select your iPhone as run destination.
-7. Press `Run`.
+- Local-first: no backend, no cloud sync
+- Face ID protected for sensitive actions
+- Fast access with a modern card UI
+- Card provider logos, notes, and cardholder name support
+- Copy card number, expiry, and CVV with one tap
 
-## Install On iPhone (first time)
-1. On iPhone, enable `Developer Mode`:
-   `Settings > Privacy & Security > Developer Mode`.
-2. If you see untrusted developer warning after install:
-   `Settings > General > VPN & Device Management > Developer App > Trust`.
+## Privacy & Security
 
-## Git: What To Push
-Push these:
-- `CardVault/`
-- `CardVault.xcodeproj/` (except user-specific data)
-- `.gitignore`
-- `README.md`
+- Sensitive values (`cardNumber`, `cvv`) are stored in iOS Keychain.
+- Metadata is encrypted at rest using `CryptoKit` (`AES.GCM`).
+- All data stays on-device and local to your iPhone.
+- CardVault does not require an account and does not send card data to external servers.
 
-Do not push these:
-- `DerivedData/`
-- `build/`
-- `*.xcuserdatad`, `*.xcuserstate`, `xcuserdata/`
-- Any local caches/logs
+## Getting Started
 
-## Recommended First Commit Flow
-```bash
-git add .
-git status
-git commit -m "Set up CardVault project structure, docs, and ignore rules"
-git push origin main
-```
+1. Open `CardVault.xcodeproj` in Xcode.
+2. Set your signing team in `Signing & Capabilities`.
+3. Connect your iPhone and choose it as the run destination.
+4. Build and run.
+
+## License
+
+Licensed under Apache-2.0. See [LICENSE](LICENSE).

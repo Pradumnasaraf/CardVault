@@ -1,0 +1,19 @@
+name: "💡 Feature Request"
+description: Suggest an idea or improvement.
+title: "[FEATURE] <description>"
+labels: ["feature"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe your feature request and the problem it solves.
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Mockups / References
+      description: Share visuals or examples if available.
+    validations:
+      required: false
