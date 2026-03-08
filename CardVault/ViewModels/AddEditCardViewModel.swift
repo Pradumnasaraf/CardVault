@@ -29,6 +29,7 @@ final class AddEditCardViewModel: ObservableObject {
         }
     }
 
+    @Published var cardholderName: String = ""
     @Published var bankName: String = ""
     @Published var provider: CardProvider = .visa
     @Published var cardType: CardType = .debit {
@@ -71,6 +72,7 @@ final class AddEditCardViewModel: ObservableObject {
         if let card = existingCard {
             cardNumber = CardFormatting.formatCardNumber(card.cardNumber)
             cvv = card.cvv
+            cardholderName = card.cardholderName
             bankName = card.bankName
             provider = card.provider
             cardType = card.cardType
@@ -125,6 +127,7 @@ final class AddEditCardViewModel: ObservableObject {
             cardNumber: cardNumber,
             expiryDate: expiryDate,
             cvv: cvv,
+            cardholderName: cardholderName,
             bankName: bankName,
             provider: provider,
             cardType: cardType,

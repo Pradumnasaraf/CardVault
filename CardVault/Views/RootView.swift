@@ -13,7 +13,10 @@ struct RootView: View {
 
     var body: some View {
         ZStack {
-            CardListView(repository: dependencies.repository)
+            CardListView(
+                repository: dependencies.repository,
+                authenticationService: dependencies.authenticationService
+            )
                 .blur(radius: lockViewModel.isUnlocked ? 0 : 12)
                 .disabled(!lockViewModel.isUnlocked)
                 .animation(.easeInOut(duration: 0.24), value: lockViewModel.isUnlocked)
@@ -75,19 +78,27 @@ private struct AppLockGateView: View {
                     .foregroundStyle(.secondary)
 
                 Button(action: unlockAction) {
-                    if isAuthenticating {
-                        ProgressView()
-                            .tint(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                    } else {
-                        Text("Unlock")
+                    HStack(spacing: 8) {
+                        if isAuthenticating {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "faceid")
+                                .font(.headline)
+                        }
+
+                        Text(isAuthenticating ? "Authenticating..." : "Unlock with Face ID")
                             .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
                     }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(Color.blue.opacity(isAuthenticating ? 0.70 : 0.90))
+                    )
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.plain)
                 .disabled(isAuthenticating)
 
                 if let errorMessage, !errorMessage.isEmpty {

@@ -21,7 +21,8 @@ protocol CardRepositoryProtocol {
     func deleteCard(id: UUID) async throws
 }
 
-actor CardRepository: CardRepositoryProtocol {
+@MainActor
+final class CardRepository: CardRepositoryProtocol {
     private let keychain: KeychainServicing
     private let metadataStore: CardMetadataStoring
 
@@ -48,6 +49,7 @@ actor CardRepository: CardRepositoryProtocol {
         let metadata = CardMetadata(
             id: id,
             expiryDate: CardFormatting.normalizeExpiry(input.expiryDate),
+            cardholderName: input.cardholderName.trimmingCharacters(in: .whitespacesAndNewlines),
             bankName: input.bankName.trimmingCharacters(in: .whitespacesAndNewlines),
             provider: input.provider,
             cardType: input.cardType,
@@ -64,6 +66,7 @@ actor CardRepository: CardRepositoryProtocol {
             cardNumber: normalizedCard,
             expiryDate: metadata.expiryDate,
             cvv: normalizedCVV,
+            cardholderName: metadata.cardholderName,
             bankName: metadata.bankName,
             provider: metadata.provider,
             cardType: metadata.cardType,
@@ -86,6 +89,7 @@ actor CardRepository: CardRepositoryProtocol {
         try storeSensitiveData(id: id, cardNumber: normalizedCard, cvv: normalizedCVV)
 
         items[index].expiryDate = CardFormatting.normalizeExpiry(input.expiryDate)
+        items[index].cardholderName = input.cardholderName.trimmingCharacters(in: .whitespacesAndNewlines)
         items[index].bankName = input.bankName.trimmingCharacters(in: .whitespacesAndNewlines)
         items[index].provider = input.provider
         items[index].cardType = input.cardType
@@ -101,6 +105,7 @@ actor CardRepository: CardRepositoryProtocol {
             cardNumber: normalizedCard,
             expiryDate: item.expiryDate,
             cvv: normalizedCVV,
+            cardholderName: item.cardholderName,
             bankName: item.bankName,
             provider: item.provider,
             cardType: item.cardType,
@@ -132,6 +137,7 @@ actor CardRepository: CardRepositoryProtocol {
             cardNumber: cardNumber,
             expiryDate: metadata.expiryDate,
             cvv: cvv,
+            cardholderName: metadata.cardholderName,
             bankName: metadata.bankName,
             provider: metadata.provider,
             cardType: metadata.cardType,

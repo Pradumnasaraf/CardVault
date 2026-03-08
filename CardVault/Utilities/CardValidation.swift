@@ -4,6 +4,7 @@ enum CardValidationError: LocalizedError {
     case invalidCardNumber
     case invalidExpiry
     case invalidCVV
+    case missingCardholderName
     case missingBankName
     case invalidCreditLimit
 
@@ -15,6 +16,8 @@ enum CardValidationError: LocalizedError {
             return "Enter a valid expiry date in MM/YY format."
         case .invalidCVV:
             return "Enter a valid CVV."
+        case .missingCardholderName:
+            return "Cardholder name is required."
         case .missingBankName:
             return "Bank name is required."
         case .invalidCreditLimit:
@@ -37,6 +40,10 @@ enum CardValidation {
         let normalizedCVV = CardFormatting.normalizeCVV(input.cvv)
         guard (3...4).contains(normalizedCVV.count) else {
             throw CardValidationError.invalidCVV
+        }
+
+        guard !input.cardholderName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw CardValidationError.missingCardholderName
         }
 
         guard !input.bankName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {

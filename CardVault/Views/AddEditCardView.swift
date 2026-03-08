@@ -18,6 +18,9 @@ struct AddEditCardView: View {
                     TextField("Bank Name", text: $viewModel.bankName)
                         .textInputAutocapitalization(.words)
 
+                    TextField("Name on Card", text: $viewModel.cardholderName)
+                        .textInputAutocapitalization(.words)
+
                     Picker("Provider", selection: $viewModel.provider) {
                         ForEach(CardProvider.allCases) { provider in
                             Text(provider.rawValue).tag(provider)
@@ -66,7 +69,7 @@ struct AddEditCardView: View {
                     .transition(.opacity.combined(with: .move(edge: .top)))
                 }
 
-                Section("Notes") {
+                Section("Card Features & Info") {
                     TextEditor(text: $viewModel.notes)
                         .frame(minHeight: 120)
                         .overlay(alignment: .topLeading) {

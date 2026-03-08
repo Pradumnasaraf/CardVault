@@ -19,11 +19,17 @@ enum AuthenticationError: LocalizedError {
 }
 
 protocol AuthenticationServicing {
-    func authenticate() async throws
+    func authenticate(reason: String) async throws
+}
+
+extension AuthenticationServicing {
+    func authenticate() async throws {
+        try await authenticate(reason: "Unlock CardVault")
+    }
 }
 
 final class AuthenticationService: AuthenticationServicing {
-    func authenticate() async throws {
+    func authenticate(reason: String) async throws {
         let context = LAContext()
         context.localizedCancelTitle = "Cancel"
 
@@ -36,7 +42,6 @@ final class AuthenticationService: AuthenticationServicing {
             throw AuthenticationError.notFaceID
         }
 
-        let reason = "Unlock CardVault"
         let success = await withCheckedContinuation { continuation in
             context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
                 continuation.resume(returning: success)

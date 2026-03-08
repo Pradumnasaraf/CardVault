@@ -6,9 +6,8 @@ final class CardListViewModel: ObservableObject {
     @Published private(set) var cards: [Card] = []
     @Published private(set) var isLoading = false
     @Published var errorMessage: String?
-    @Published var cardPendingDeletion: Card?
-
-    private let repository: CardRepositoryProtocol
+    
+    let repository: CardRepositoryProtocol
 
     init(repository: CardRepositoryProtocol) {
         self.repository = repository
@@ -26,24 +25,8 @@ final class CardListViewModel: ObservableObject {
         }
     }
 
-    func requestDelete(_ card: Card) {
-        cardPendingDeletion = card
-    }
-
-    func confirmDelete() async {
-        guard let card = cardPendingDeletion else { return }
-        cardPendingDeletion = nil
-
-        do {
-            try await repository.deleteCard(id: card.id)
-            cards.removeAll { $0.id == card.id }
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    func cancelDelete() {
-        cardPendingDeletion = nil
+    func removeCard(id: UUID) {
+        cards.removeAll { $0.id == id }
     }
 
     func upsert(_ card: Card) {

@@ -1,88 +1,281 @@
 import SwiftUI
+import UIKit
 
 struct PaymentCardView: View {
     let card: Card
-    var revealNumber: Bool = false
+    var revealSensitive: Bool = false
+    var onVisibilityTap: (() -> Void)? = nil
 
     @Environment(\.colorScheme) private var colorScheme
+    @State private var toastMessage: String?
+    @State private var toastDismissTask: Task<Void, Never>?
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(gradient)
 
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(.ultraThinMaterial.opacity(colorScheme == .dark ? 0.12 : 0.22))
+                .fill(.ultraThinMaterial.opacity(colorScheme == .dark ? 0.15 : 0.18))
 
-            VStack(alignment: .leading, spacing: 20) {
-                HStack {
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .strokeBorder(.white.opacity(0.24), lineWidth: 1)
+
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .top) {
                     Text(card.bankName)
-                        .font(.headline.weight(.semibold))
+                        .font(.headline.weight(.bold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
 
-                    Spacer(minLength: 8)
-
-                    HStack(spacing: 6) {
-                        Image(systemName: card.provider.logoSymbolName)
-                        Text(card.provider.rawValue)
-                            .font(.subheadline.weight(.medium))
-                    }
-                    .foregroundStyle(.white.opacity(0.95))
+                    Spacer(minLength: 10)
                 }
 
-                Spacer(minLength: 0)
-
-                Text(displayNumber)
-                    .font(.system(size: 22, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .monospacedDigit()
-                    .minimumScaleFactor(0.8)
+                LabeledSensitiveValue(
+                    title: "CARD NUMBER",
+                    value: displayNumber,
+                    showCopy: revealSensitive,
+                    copyValue: card.cardNumber,
+                    onCopy: copyToClipboard
+                )
 
                 HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("EXPIRY")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(.white.opacity(0.75))
-                        Text(card.expiryDate)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .monospacedDigit()
-                    }
+                    LabeledSensitiveValue(
+                        title: "EXPIRY",
+                        value: card.expiryDate,
+                        showCopy: revealSensitive,
+                        copyValue: card.expiryDate,
+                        onCopy: copyToClipboard
+                    )
 
                     Spacer()
 
-                    Text(card.cardType.rawValue)
-                        .font(.caption.weight(.semibold))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(.white.opacity(0.16), in: Capsule())
-                        .foregroundStyle(.white)
+                    LabeledSensitiveValue(
+                        title: "CVV",
+                        value: revealSensitive ? card.cvv : "***",
+                        showCopy: revealSensitive,
+                        copyValue: card.cvv,
+                        onCopy: copyToClipboard
+                    )
+
+                    Spacer()
+                    Group {
+                        if card.cardType == .credit {
+                            LabeledSensitiveValue(
+                                title: "LIMIT",
+                                value: limitDisplayValue,
+                                showCopy: false,
+                                copyValue: nil,
+                                onCopy: nil
+                            )
+                        } else {
+                            // Keep CVV position consistent between debit and credit cards.
+                            Color.clear
+                                .frame(width: 80, height: 34)
+                        }
+                    }
                 }
+
+                if !card.cardholderName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    LabeledSensitiveValue(
+                        title: "NAME",
+                        value: card.cardholderName.uppercased(),
+                        showCopy: false,
+                        copyValue: nil,
+                        onCopy: nil
+                    )
+                }
+
+                Spacer(minLength: 0)
             }
             .padding(22)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        .overlay(alignment: .topTrailing) {
+            ProviderLogoView(provider: card.provider)
+                .padding(.top, 14)
+                .padding(.trailing, 14)
+        }
+        .overlay(alignment: .bottomTrailing) {
+            Circle()
+                .fill(.white.opacity(0.10))
+                .frame(width: 110, height: 110)
+                .offset(x: 30, y: 28)
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if let onVisibilityTap {
+                Button(action: onVisibilityTap) {
+                    Image(systemName: revealSensitive ? "eye.slash.fill" : "eye.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(10)
+                        .background(.black.opacity(0.30), in: Circle())
+                }
+                .buttonStyle(.plain)
+                .padding(.bottom, 14)
+                .padding(.trailing, 14)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if let toastMessage {
+                Text(toastMessage)
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(.black.opacity(0.72), in: Capsule())
+                    .foregroundStyle(.white)
+                    .padding(.bottom, 14)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: toastMessage)
         .shadow(color: .black.opacity(colorScheme == .dark ? 0.35 : 0.2), radius: 20, y: 10)
     }
 
     private var displayNumber: String {
-        revealNumber
+        revealSensitive
             ? CardFormatting.formatCardNumber(card.cardNumber)
             : card.maskedNumber
+    }
+
+    private var limitDisplayValue: String {
+        guard let creditLimit = card.creditLimit else { return "N/A" }
+        return NumberFormatter.currency.string(from: NSDecimalNumber(decimal: creditLimit)) ?? "\(creditLimit)"
     }
 
     private var gradient: LinearGradient {
         switch card.provider {
         case .visa:
-            return LinearGradient(colors: [Color(red: 0.07, green: 0.25, blue: 0.73), Color(red: 0.06, green: 0.50, blue: 0.98)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            return LinearGradient(colors: [Color(red: 0.02, green: 0.23, blue: 0.62), Color(red: 0.14, green: 0.56, blue: 0.96)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .masterCard:
-            return LinearGradient(colors: [Color(red: 0.79, green: 0.22, blue: 0.14), Color(red: 0.95, green: 0.58, blue: 0.16)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            return LinearGradient(colors: [Color(red: 0.66, green: 0.10, blue: 0.14), Color(red: 0.98, green: 0.58, blue: 0.16)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .americanExpress:
-            return LinearGradient(colors: [Color(red: 0.03, green: 0.45, blue: 0.56), Color(red: 0.18, green: 0.73, blue: 0.75)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            return LinearGradient(colors: [Color(red: 0.00, green: 0.37, blue: 0.60), Color(red: 0.05, green: 0.71, blue: 0.80)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .discover:
-            return LinearGradient(colors: [Color(red: 0.19, green: 0.18, blue: 0.20), Color(red: 0.95, green: 0.43, blue: 0.09)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            return LinearGradient(colors: [Color(red: 0.17, green: 0.17, blue: 0.20), Color(red: 0.94, green: 0.43, blue: 0.08)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .ruPay:
+            return LinearGradient(colors: [Color(red: 0.00, green: 0.30, blue: 0.62), Color(red: 0.16, green: 0.62, blue: 0.40)], startPoint: .topLeading, endPoint: .bottomTrailing)
         case .other:
-            return LinearGradient(colors: [Color(red: 0.16, green: 0.22, blue: 0.28), Color(red: 0.35, green: 0.43, blue: 0.55)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            return LinearGradient(colors: [Color(red: 0.20, green: 0.24, blue: 0.28), Color(red: 0.42, green: 0.48, blue: 0.56)], startPoint: .topLeading, endPoint: .bottomTrailing)
         }
     }
+
+    private func copyToClipboard(_ value: String) {
+        UIPasteboard.general.string = value
+
+        toastDismissTask?.cancel()
+        toastMessage = "Copied"
+        toastDismissTask = Task {
+            try? await Task.sleep(for: .seconds(1.5))
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                withAnimation {
+                    toastMessage = nil
+                }
+            }
+        }
+    }
+}
+
+private struct ProviderLogoView: View {
+    let provider: CardProvider
+
+    var body: some View {
+        Group {
+            if let asset = provider.logoAssetName {
+                Image(asset)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFit()
+                    .frame(width: logoWidth, height: logoHeight, alignment: .trailing)
+                    .offset(x: logoOffsetX)
+            } else {
+                Image(systemName: "creditcard.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.95))
+            }
+        }
+        .frame(width: 92, height: 30, alignment: .trailing)
+        .shadow(color: .black.opacity(0.22), radius: 3, y: 2)
+    }
+
+    private var logoWidth: CGFloat {
+        switch provider {
+        case .visa:
+            return 74
+        case .masterCard:
+            return 64
+        case .americanExpress:
+            return 44
+        case .discover:
+            return 80
+        case .ruPay:
+            return 82
+        case .other:
+            return 24
+        }
+    }
+
+    private var logoHeight: CGFloat {
+        switch provider {
+        case .americanExpress:
+            return 22
+        case .masterCard:
+            return 28
+        default:
+            return 24
+        }
+    }
+
+    private var logoOffsetX: CGFloat {
+        switch provider {
+        case .americanExpress:
+            return 2
+        default:
+            return 0
+        }
+    }
+}
+
+private struct LabeledSensitiveValue: View {
+    let title: String
+    let value: String
+    let showCopy: Bool
+    let copyValue: String?
+    let onCopy: ((String) -> Void)?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 6) {
+                Text(title)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.72))
+
+                if showCopy, let copyValue {
+                    Button {
+                        onCopy?(copyValue)
+                    } label: {
+                        Image(systemName: "doc.on.doc")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.white.opacity(0.92))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            Text(value)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.white)
+                .monospacedDigit()
+        }
+    }
+}
+
+private extension NumberFormatter {
+    static let currency: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.maximumFractionDigits = 2
+        return formatter
+    }()
 }
