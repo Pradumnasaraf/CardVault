@@ -1,17 +1,12 @@
-//
-//  CardVaultApp.swift
-//  CardVault
-//
-//  Created by Pradumna Saraf on 08/03/26.
-//
-
 import SwiftUI
 
 @main
 struct CardVaultApp: App {
+    private let dependencies = AppDependencies.live()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView(dependencies: dependencies)
         }
     }
 }
