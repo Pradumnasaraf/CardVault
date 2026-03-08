@@ -6,10 +6,14 @@
 
 CardVault is a clean, secure iOS card wallet built for local-first privacy. Your card data stays on your iPhone and is never uploaded to a backend or cloud service.
 
-## Screenshots
-
 <p align="center">
-  <img src="docs/images/lock-screen.png" alt="CardVault lock screen" width="260" />
+  <img src="docs/images/screenshot-1.png" alt="CardVault screenshot 1" width="170" />
+  &nbsp;
+  <img src="docs/images/screenshot-2.png" alt="CardVault screenshot 2" width="170" />
+  &nbsp;
+  <img src="docs/images/screenshot-3.png" alt="CardVault screenshot 3" width="170" />
+  &nbsp;
+  <img src="docs/images/screenshot-4.png" alt="CardVault screenshot 4" width="170" />
 </p>
 
 ## Why CardVault
