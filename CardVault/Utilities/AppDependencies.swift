@@ -10,16 +10,9 @@ final class AppDependencies {
         self.repository = repository
     }
 
-    static func live() -> AppDependencies {
+    static func live() throws -> AppDependencies {
         let keychain = KeychainService()
-        let metadataStore: EncryptedMetadataStore
-
-        do {
-            metadataStore = try EncryptedMetadataStore(keychain: keychain)
-        } catch {
-            fatalError("Failed to create encrypted metadata store: \(error.localizedDescription)")
-        }
-
+        let metadataStore = try EncryptedMetadataStore(keychain: keychain)
         let repository = CardRepository(keychain: keychain, metadataStore: metadataStore)
         let authentication = AuthenticationService()
         return AppDependencies(authenticationService: authentication, repository: repository)

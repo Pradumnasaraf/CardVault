@@ -50,6 +50,7 @@ struct CardListView: View {
                                 Label("Settings", systemImage: "gearshape")
                             }
                             .tint(.gray)
+                            .accessibilityLabel("Open settings for \(card.bankName) card")
                         }
                     }
                 }
@@ -57,7 +58,13 @@ struct CardListView: View {
                 .listStyle(.plain)
                 .animation(.snappy(duration: 0.28), value: viewModel.cards)
 
-                if viewModel.cards.isEmpty && !viewModel.isLoading {
+                if viewModel.isLoading && viewModel.cards.isEmpty {
+                    ContentUnavailableView {
+                        ProgressView()
+                    } description: {
+                        Text("Loading your cards...")
+                    }
+                } else if viewModel.cards.isEmpty {
                     ContentUnavailableView {
                         Label("No Cards Yet", systemImage: "creditcard")
                     } description: {
@@ -79,6 +86,7 @@ struct CardListView: View {
                     } label: {
                         Label("Add Card", systemImage: "plus")
                     }
+                    .accessibilityLabel("Add new card")
                 }
             }
             .sheet(isPresented: $showingAddCard) {
@@ -93,6 +101,12 @@ struct CardListView: View {
                         repository: repository,
                         onCardUpdated: { updated in
                             handleCardUpdated(updated)
+                        },
+                        onCardDeleted: { id in
+                            Task {
+                                await viewModel.deleteCard(id: id)
+                                selectedSettingsCard = nil
+                            }
                         }
                     )
                 }
@@ -118,13 +132,20 @@ struct CardListView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "Unknown error")
             }
+            .alert("Unable to Delete", isPresented: deleteErrorAlertBinding) {
+                Button("OK", role: .cancel) {
+                    viewModel.deleteErrorMessage = nil
+                }
+            } message: {
+                Text(viewModel.deleteErrorMessage ?? "An error occurred.")
+            }
             .task {
                 await viewModel.loadCards()
             }
             .refreshable {
                 await viewModel.loadCards()
             }
-            .onChange(of: viewModel.cards) { _, newCards in
+            .onChange(of: viewModel.cards, initial: false) { _, newCards in
                 let cardIDs = Set(newCards.map(\.id))
                 revealedCardIDs.formIntersection(cardIDs)
                 for id in revealTasks.keys where !cardIDs.contains(id) {
@@ -147,6 +168,17 @@ struct CardListView: View {
             set: { newValue in
                 if !newValue {
                     viewModel.errorMessage = nil
+                }
+            }
+        )
+    }
+
+    private var deleteErrorAlertBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.deleteErrorMessage != nil },
+            set: { newValue in
+                if !newValue {
+                    viewModel.deleteErrorMessage = nil
                 }
             }
         )

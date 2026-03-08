@@ -6,6 +6,7 @@ final class CardListViewModel: ObservableObject {
     @Published private(set) var cards: [Card] = []
     @Published private(set) var isLoading = false
     @Published var errorMessage: String?
+    @Published var deleteErrorMessage: String?
     
     let repository: CardRepositoryProtocol
 
@@ -25,8 +26,14 @@ final class CardListViewModel: ObservableObject {
         }
     }
 
-    func removeCard(id: UUID) {
-        cards.removeAll { $0.id == id }
+    func deleteCard(id: UUID) async {
+        do {
+            try await repository.deleteCard(id: id)
+            cards.removeAll { $0.id == id }
+            deleteErrorMessage = nil
+        } catch {
+            deleteErrorMessage = error.localizedDescription
+        }
     }
 
     func upsert(_ card: Card) {

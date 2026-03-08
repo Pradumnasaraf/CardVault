@@ -96,6 +96,9 @@ struct PaymentCardView: View {
                 .padding(.top, 14)
                 .padding(.trailing, 14)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint(revealSensitive ? "Card details revealed" : "Double tap to reveal card details")
         .overlay(alignment: .bottomTrailing) {
             Circle()
                 .fill(.white.opacity(0.10))
@@ -112,6 +115,8 @@ struct PaymentCardView: View {
                         .background(.black.opacity(0.30), in: Circle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(revealSensitive ? "Conceal card details" : "Reveal card details")
+                .accessibilityHint("Requires Face ID")
                 .padding(.bottom, 14)
                 .padding(.trailing, 14)
             }
@@ -130,6 +135,17 @@ struct PaymentCardView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: toastMessage)
         .shadow(color: .black.opacity(colorScheme == .dark ? 0.35 : 0.2), radius: 20, y: 10)
+    }
+
+    private var accessibilityLabel: String {
+        let bank = card.bankName
+        let last4 = card.last4
+        let provider = card.provider.rawValue
+        if revealSensitive {
+            return "\(bank) \(provider) card ending in \(last4), full number visible"
+        } else {
+            return "\(bank) \(provider) card ending in \(last4), details hidden"
+        }
     }
 
     private var displayNumber: String {
@@ -260,6 +276,7 @@ private struct LabeledSensitiveValue: View {
                             .foregroundStyle(.white.opacity(0.92))
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Copy \(title)")
                 }
             }
 

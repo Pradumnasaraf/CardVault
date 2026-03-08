@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/logo.png" alt="CardVault Logo" width="120" />
+  <img src="https://github.com/user-attachments/assets/3dffe5a2-2d65-4330-aa63-6109def681ff" alt="CardVault Logo" width="120" />
 </p>
 
 # CardVault
@@ -7,13 +7,13 @@
 CardVault is a clean, secure iOS card wallet built for local-first privacy. Your card data stays on your iPhone and is never uploaded to a backend or cloud service.
 
 <p align="center">
-  <img src="docs/images/screenshot-1.png" alt="CardVault screenshot 1" width="170" />
+  <img src="https://github.com/user-attachments/assets/98858d33-0360-45be-8387-20aefbfed294" alt="screenshot-1" width="170" />
   &nbsp;
-  <img src="docs/images/screenshot-2.png" alt="CardVault screenshot 2" width="170" />
+  <img src="https://github.com/user-attachments/assets/61f0dcc4-68e3-4b94-a93b-f23d9846ad49" alt="screenshot-2" width="170" />
   &nbsp;
-  <img src="docs/images/screenshot-3.png" alt="CardVault screenshot 3" width="170" />
+  <img src="https://github.com/user-attachments/assets/dd30a5f2-79b8-46da-b9df-637a96015115" alt="screenshot-3" width="170" />
   &nbsp;
-  <img src="docs/images/screenshot-4.png" alt="CardVault screenshot 4" width="170" />
+  <img src="https://github.com/user-attachments/assets/c82b696a-dc67-485a-95c1-494c55784e00" alt="screenshot-4" width="170" />
 </p>
 
 ## Why CardVault
